@@ -1,0 +1,62 @@
+<?php require_once('../Connections/gohiking.php'); ?>
+<?php
+// 這支程式就是將自己模擬成 client 端,
+// 發送 POST 給 Google GCM server
+
+$apiKey = "YOUR KEY HERE";
+
+// 列出要發送的 user 端 Android 裝置
+//$sql = "SELECT * FROM gcm_client_資料表";
+//$rs = $pdo->query($sql);
+
+$regID = array();
+//將裝置ID存進去$regID  array
+
+$sql = "Select * from devices";
+mysql_select_db($database_gohiking, $gohiking);
+$rs = mysql_query($sql, $gohiking) or die(mysql_error());
+while ($row = mysql_fetch_assoc($rs))
+{
+        array_push($regID, $row['device_token']);
+}
+
+// Set POST variables推播處理網址
+$url = 'https://android.googleapis.com/gcm/send';
+
+// 要發送的訊息內容 message, campaigndate, title, description 組成陣列
+
+
+$fields = array('registration_ids' => $regID,
+ 'data' => array( 'message' => 'Title',
+ 'campaigndate' => '456',
+ 'category' => 'ooxx',
+ 'id' => '123123',
+ 'title' => 'OOXX',
+ 'description' => '012'
+ )
+ );
+
+$headers = array('Content-Type: application/json',
+ 'Authorization: key='.$apiKey
+ );
+
+// Open connection
+$ch = curl_init();
+
+// Set the url, number of POST vars, POST data
+curl_setopt( $ch, CURLOPT_URL, $url );
+curl_setopt( $ch, CURLOPT_POST, true );
+curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+// Disabling SSL Certificate support temporarly
+// curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+// 發送的訊息內容轉成 JSON 格式
+curl_setopt( $ch, CURLOPT_POSTFIELDS, json_encode( $fields ) );
+
+// 傳送到 Google GCM server,
+// 並接收回傳結果
+$result = curl_exec($ch);
+echo $result;
+// Close connection
+curl_close($ch);
+?>

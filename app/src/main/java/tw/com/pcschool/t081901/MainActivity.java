@@ -9,6 +9,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
@@ -31,6 +36,22 @@ public class MainActivity extends AppCompatActivity {
                 gcm = GoogleCloudMessaging.getInstance(MainActivity.this);
                 try {
                     String regid = gcm.register(SENDER_ID);
+                    RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
+                    StringRequest request = new StringRequest("http://gohiking.mwnl.tw/push/register.php?nickname=Teacher&token=" + regid,
+                            new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+
+                                }
+                            }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+
+                        }
+                    });
+                    queue.add(request);
+                    queue.start();
+
                     Log.d("GCM", regid);
                 } catch (IOException e) {
                     e.printStackTrace();
